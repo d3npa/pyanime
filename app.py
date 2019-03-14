@@ -19,18 +19,16 @@ for extension in os.listdir("extensions"):
         print("[*] 「%s」拡張をロードしました" % extension)
         del(ext)
 
-@app.after_request
-def log_request(res):
+@app.before_request
+def log_request():
     remote_addr = request.headers["X-Forwarded-For"] if "X-Forwarded-For" in request.headers else request.remote_addr
-    line = "{1} - [{0}] \"{4} {2}\" {3} - UA: {5}".format(
+    line = "[{0}] - {1} \"{3} {2}\" - UA: {4}".format(
         time.strftime("%y/%m/%d %H:%M:%S"),
         remote_addr,
         str(request.url),
-        res.status_code,
         request.method,
         request.headers["User-Agent"])
     print(line)
-    return res
 
 @app.route("/res/<path:path>")
 def view_resource(path):
