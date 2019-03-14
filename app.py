@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, make_response, render_template, redirect, request, abort
 from mimetypes import guess_type as guess_mime
-import os, time, re
+import os, time, re, base64
 app = Flask(__name__)
 
 import logging
@@ -56,6 +56,17 @@ def index():
 def search(site, terms):
     if site in extensions:
         res = extensions[site].search(terms)
+        res = make_response(res)
+        res.headers["Content-Type"] = "application/json; charset=UTF-8"
+        return res
+    abort(404)
+
+
+@app.route("/<site>/series/<string:url>")
+def series(site, url): # エピソード一覧を取得する
+    if site in extensions:
+        url = base64.b64decode(url).decode("utf-8")
+        res = extensions[site].series(url)
         res = make_response(res)
         res.headers["Content-Type"] = "application/json; charset=UTF-8"
         return res
