@@ -1,5 +1,64 @@
 import json, urllib.request, urllib.parse
 from bs4 import BeautifulSoup
+la = "0a9de5a4";
+
+def episode(url, quality=720):
+    # URLからラーバンのリンクを取得
+    def gen_token(o, la):
+        def sum(string):
+            a = 0
+            for i in range(len(string)):
+                a += ord(string[i]) + i
+            return a
+        def secret(t, i):
+            e = 0
+            for n in range(max(len(t), len(i))):
+                e *= ord(i[n]) if n < len(i) else 1
+                e *= ord(t[n]) if n < len(t) else 1
+            return hex(e)
+        r = sum(la)
+        for key in o:
+            r += sum(secret(la + key, o[key]))
+        return r - 49
+
+    episode_id = url.split("/")[-1]
+    headers = {
+        "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0"
+    }
+    print("[*] [9anime] Getting details for episode %s" % episode_id)
+    req = urllib.request.Request(url, headers=headers)
+    res = urllib.request.urlopen(req).read().decode("utf-8")
+    soup = BeautifulSoup(res, "html.parser")
+    data = {
+        "id" : episode_id,
+        "server" : "33", # RapidVideo
+        "ts" : soup.select_one("html")["data-ts"]
+    }
+    data.update({
+        "_" : gen_token(data, la)
+    })
+    data = urllib.parse.urlencode(data)
+    url = "https://www4.9anime.to/ajax/episode/info?" + data
+    print("[*] [9anime] Getting links for episode %s" % episode_id)
+    req = urllib.request.Request(url, headers=headers)
+    res = urllib.request.urlopen(req).read().decode("utf-8")
+    url = json.loads(res)["target"] + "&q=%dp" % quality
+    print("[*] [RapidVideo] Getting %s at %dp" % (url.split("/")[-1], quality))
+    headers = {
+        "Authority" : "www.rapidvideo.com",
+        "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+        "Referer" : url,
+        "Content-Type" : "application/x-www-form-urlencoded",
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0",
+        "Range": "bytes=0-"
+    }
+    req = urllib.request.Request(url, headers=headers)
+    res = urllib.request.urlopen(req).read().decode("utf-8")
+    soup = BeautifulSoup(res, "html.parser")
+    res = {
+        "link" : soup.select_one("#videojs > source:last-child")["src"]
+    }
+    return json.dumps(res)
 
 def series(url):
     def magic(i):
@@ -7,7 +66,6 @@ def series(url):
         for n in range(len(i)):
             e += ord(i[n]) + n
         return e
-    la = "0a9de5a4";
     headers = {
         "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0"
     }

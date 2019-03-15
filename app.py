@@ -59,12 +59,21 @@ def search(site, terms):
         return res
     abort(404)
 
-
 @app.route("/<site>/series/<string:url>")
 def series(site, url): # エピソード一覧を取得する
     if site in extensions:
         url = base64.b64decode(url).decode("utf-8")
         res = extensions[site].series(url)
+        res = make_response(res)
+        res.headers["Content-Type"] = "application/json; charset=UTF-8"
+        return res
+    abort(404)
+
+@app.route("/<site>/episode/<string:url>")
+def episode(site, url): # エピソード一覧を取得する
+    if site in extensions:
+        url = base64.b64decode(url).decode("utf-8")
+        res = extensions[site].episode(url)
         res = make_response(res)
         res.headers["Content-Type"] = "application/json; charset=UTF-8"
         return res
