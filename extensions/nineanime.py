@@ -1,5 +1,6 @@
 import json, urllib.request, urllib.parse
 from bs4 import BeautifulSoup
+import base64
 la = "0a9de5a4";
 
 def episode(url, quality=720):
@@ -61,7 +62,7 @@ def episode(url, quality=720):
         }
         return json.dumps(res)
     except:
-        return 
+        return
 
 def series(url):
     def magic(i):
@@ -93,9 +94,10 @@ def series(url):
     for episode in episodes:
         res.append({
             "number" : episode.contents[0],
-            "link" : "https://www4.9anime.to" + episode["href"]
+            "link" : "https://www4.9anime.to" + episode["href"],
+            "next" : "http://127.0.0.1:5000/nineanime/episode/%s" % base64.b64encode(("https://www4.9anime.to" + episode["href"]).encode("utf-8")).decode()
         })
-    res = sorted(res, key=lambda x: float(x["number"]))
+    res = sorted(res, key=lambda x: x["number"])
     return json.dumps(res)
 
 def search(terms):
@@ -112,6 +114,7 @@ def search(terms):
         res.append({
             "title" : entry["alt"],
             "poster" : entry["src"],
-            "link" : entry.parent["href"]
+            "link" : entry.parent["href"],
+            "next" : "http://127.0.0.1:5000/nineanime/series/%s" % base64.b64encode(entry.parent["href"].encode("utf-8")).decode()
         })
     return json.dumps(res)
