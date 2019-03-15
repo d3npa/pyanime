@@ -54,9 +54,10 @@ def index():
 def search(site, terms):
     if site in extensions:
         res = extensions[site].search(terms)
-        res = make_response(res)
-        res.headers["Content-Type"] = "application/json; charset=UTF-8"
-        return res
+        if res:
+            res = make_response(res)
+            res.headers["Content-Type"] = "application/json; charset=UTF-8"
+            return res
     abort(404)
 
 @app.route("/<site>/series/<string:url>")
@@ -64,19 +65,22 @@ def series(site, url): # エピソード一覧を取得する
     if site in extensions:
         url = base64.b64decode(url).decode("utf-8")
         res = extensions[site].series(url)
-        res = make_response(res)
-        res.headers["Content-Type"] = "application/json; charset=UTF-8"
-        return res
+        if res:
+            res = make_response(res)
+            res.headers["Content-Type"] = "application/json; charset=UTF-8"
+            return res
     abort(404)
 
 @app.route("/<site>/episode/<string:url>")
-def episode(site, url): # エピソード一覧を取得する
-    if site in extensions:
+@app.route("/<site>/episode/<string:url>/<string:quality>")
+def episode(site, url, quality="720"): # エピソード一覧を取得する
+    if site in extensions and quality in ["360", "480", "720", "1080"]:
         url = base64.b64decode(url).decode("utf-8")
-        res = extensions[site].episode(url)
-        res = make_response(res)
-        res.headers["Content-Type"] = "application/json; charset=UTF-8"
-        return res
+        res = extensions[site].episode(url, quality=int(quality))
+        if res:
+            res = make_response(res)
+            res.headers["Content-Type"] = "application/json; charset=UTF-8"
+            return res
     abort(404)
 
 if __name__ == "__main__":

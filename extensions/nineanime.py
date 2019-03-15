@@ -25,7 +25,7 @@ def episode(url, quality=720):
     headers = {
         "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0"
     }
-    print("[*] [9anime] Getting details for episode %s" % episode_id)
+    print("[*] [9anime] Getting details for episode '%s'" % episode_id)
     req = urllib.request.Request(url, headers=headers)
     res = urllib.request.urlopen(req).read().decode("utf-8")
     soup = BeautifulSoup(res, "html.parser")
@@ -39,11 +39,11 @@ def episode(url, quality=720):
     })
     data = urllib.parse.urlencode(data)
     url = "https://www4.9anime.to/ajax/episode/info?" + data
-    print("[*] [9anime] Getting links for episode %s" % episode_id)
+    print("[*] [9anime] Getting links for episode '%s'" % episode_id)
     req = urllib.request.Request(url, headers=headers)
     res = urllib.request.urlopen(req).read().decode("utf-8")
     url = json.loads(res)["target"] + "&q=%dp" % quality
-    print("[*] [RapidVideo] Getting %s at %dp" % (url.split("/")[-1], quality))
+    print("[*] [RapidVideo] Getting '%s' at %dp" % (url.split("/")[-1].split("&")[0], quality))
     headers = {
         "Authority" : "www.rapidvideo.com",
         "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
@@ -55,10 +55,13 @@ def episode(url, quality=720):
     req = urllib.request.Request(url, headers=headers)
     res = urllib.request.urlopen(req).read().decode("utf-8")
     soup = BeautifulSoup(res, "html.parser")
-    res = {
-        "link" : soup.select_one("#videojs > source:last-child")["src"]
-    }
-    return json.dumps(res)
+    try:
+        res = {
+            "link" : soup.select_one("#videojs > source:last-child")["src"]
+        }
+        return json.dumps(res)
+    except:
+        return 
 
 def series(url):
     def magic(i):
@@ -70,7 +73,7 @@ def series(url):
     headers = {
         "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0"
     }
-    print("[*] [9anime] Loading page for series %s" % series_id)
+    print("[*] [9anime] Loading page for series '%s'" % series_id)
     req = urllib.request.Request(url, headers=headers)
     res = urllib.request.urlopen(req).read().decode("utf-8")
     soup = BeautifulSoup(res, "html.parser")
@@ -81,7 +84,7 @@ def series(url):
         "_" : magic(la) - 1
     })
     url = "https://www8.9anime.to/ajax/film/servers/%s?%s" % (series_id, data)
-    print("[*] [9anime] Fetching episode list for series %s" % series_id)
+    print("[*] [9anime] Fetching episode list for series '%s'" % series_id)
     req = urllib.request.Request(url, headers=headers)
     res = urllib.request.urlopen(req).read().decode("utf-8")
     soup = BeautifulSoup(json.loads(res)["html"], "html.parser")
