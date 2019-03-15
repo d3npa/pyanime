@@ -66,10 +66,11 @@ def series(url):
         for n in range(len(i)):
             e += ord(i[n]) + n
         return e
+    series_id = url.split(".")[-1]
     headers = {
         "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0"
     }
-    print("[*] Getting %s" % url)
+    print("[*] [9anime] Loading page for series %s" % series_id)
     req = urllib.request.Request(url, headers=headers)
     res = urllib.request.urlopen(req).read().decode("utf-8")
     soup = BeautifulSoup(res, "html.parser")
@@ -79,8 +80,8 @@ def series(url):
         "ts" : soup.select_one("html")["data-ts"],
         "_" : magic(la) - 1
     })
-    series_id = url.split(".")[-1]
     url = "https://www8.9anime.to/ajax/film/servers/%s?%s" % (series_id, data)
+    print("[*] [9anime] Fetching episode list for series %s" % series_id)
     req = urllib.request.Request(url, headers=headers)
     res = urllib.request.urlopen(req).read().decode("utf-8")
     soup = BeautifulSoup(json.loads(res)["html"], "html.parser")
